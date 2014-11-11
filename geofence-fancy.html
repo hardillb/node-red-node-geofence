@@ -1,0 +1,319 @@
+<!--
+  Copyright 2013 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+<!-- First, the content of the edit dialog is defined.                       -->
+
+<script type="text/x-red" data-template-name="geofence">
+   <!-- data-template-name identifies the node type this is for              -->
+
+   <!-- Each of the following divs creates a field in the edit dialog.       -->
+   <!-- Generally, there should be an input for each property of the node.   -->
+   <!-- The for and id attributes identify the corresponding property        --> 
+   <!-- (with the 'node-input-' prefix).                                     -->
+   <!-- The available icon classes are defined in Twitter Bootstrap          -->
+
+    <!-- By convention, most nodes have a 'name' property. The following div -->
+    <!-- provides the necessary field.                                       -->
+    <div class="form-row">
+     
+      <link rel="stylesheet" href="node_static/geofence/leaflet/leaflet.css" />
+      <link rel="stylesheet" href="node_static/geofence/Leaflet.draw/dist/leaflet.draw.css" />
+      <link rel="stylesheet" href="node_static/geofence/L.GeoSearch/src/css/l.geosearch.css" />
+      <div id="node-geofence-map" style="width: 480px; height: 400px"></div>
+    </div>
+    
+    <div class="form-row">
+    <!--
+      <label for="node-input-mode"><i class="icon-tag"></i> Zone type </label>
+      <select id="node-input-mode" value="circle">
+        <option value="circle">Circle</option>
+        <option value="polyline">Polyline</option>
+      </select>
+      -->
+    </div>
+    
+    <div class="form-row">
+      <label for="node-input-inside"><i class="icon-tag"></i> Allow Points </label>
+      <select id="node-input-inside" value="true">
+        <option value="true">inside</option>
+        <option value="false">outside</option>
+      </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>    
+</script>
+
+
+<!-- Next, some simple help text is provided for the node.                   -->
+<script type="text/x-red" data-help-name="geofence">
+   <!-- data-help-name identifies the node type this help is for             -->
+   <!-- This content appears in the Info sidebar when a node is selected     -->
+   <!-- The first <p> is used as the pop-up tool tip when hovering over a    -->
+   <!-- node in the palette.                                                 -->
+   <p>A simple geofence filter node</p>
+   <p>It supports two shapes, circle and rectangles, and will filter all 
+   messages that either fall inside or outside the region described depending
+   on the selected mode</p>
+</script>
+
+<!-- Finally, the node type is registered along with all of its properties   -->
+<!-- The example below shows a small subset of the properties that can be set-->
+<script type="text/javascript">
+    RED.nodes.registerType('geofence',{
+        category: 'location',      // the palette category
+        color:"GoldenRod",
+        defaults: {             // defines the editable properties of the node
+            name: {value:"Geofence"},   //  along with default values.
+            mode: {value: "circle"},
+            inside: {value: "true"},
+            rad: {value: 0},
+            points: {value: []},
+            centre: {value: {latitude:0.0, longitude: 0.0}}
+        },
+        inputs:1,                // set the number of inputs - only 0 or 1
+        outputs:1,               // set the number of outputs - 0 to n
+        icon: "white-globe.png",    // set the icon (held in public/icons)
+        label: function() {      // sets the default label contents
+            return this.name||"geofence";
+        },
+        labelStyle: function() { // sets the class to apply to the label
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function () {
+
+          function setupMap(node) {
+            var map = L.map('node-geofence-map').setView([50.9025, -1.4042], 13);
+
+            window.node_geofence_map = map;
+            L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+              maxZoom: 18,
+              attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                  'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+              id: 'examples.map-i875mjb7'
+            }).addTo(map);
+
+            var drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            var drawControl = new L.Control.Draw({
+            draw: {
+              position: 'topleft',
+              //polygon: false,
+              polyline: false,
+              marker: false,
+              circle: {
+                  shapeOptions: {
+                    color: '#662d91'
+                  }
+                }
+              },
+              edit: {
+                featureGroup: drawnItems,
+                edit: false
+              }
+            });
+            map.addControl(drawControl);
+
+            map.on('draw:created', function (e) {
+              var type = e.layerType,
+              layer = e.layer;
+              layer.shape = "geofence";
+                        
+              drawnItems.addLayer(layer);
+
+              //disable drawing
+              drawControl.setDrawingOptions(
+                {
+                  polygon: false,
+                  rectangle: false,
+                  polyline: false,
+                  marker: false,
+                  circle: false
+                }
+              );
+
+
+            });
+
+            map.on('draw:delete', function (e) {
+              //enable drawing
+              drawControl.setDrawingOptions(
+                {
+                  //polygon: false,
+                  polyline: false,
+                  marker: false,
+                  rectangle: {
+                    shapeOptions: {
+                        color: '#662d91'
+                      }
+                    },
+                  circle: {
+                      shapeOptions: {
+                        color: '#662d91'
+                      }
+                    }
+                }
+              );
+
+            });
+
+            new L.Control.GeoSearch({
+              provider: new L.GeoSearch.Provider.OpenStreetMap(),
+              position: 'topcenter',
+              showMarker: false,
+              zoomLevel: 12
+            }).addTo(map);
+
+            if (node.mode === "circle") {
+              if (node.rad != 0) {
+                //console.log("found circle - ");
+                var circ = L.circle(
+                  [node.centre.latitude, node.centre.longitude], 
+                  node.rad,
+                  {
+                    color: '#662d91'
+                  }
+                );
+                circ.addTo(drawnItems);
+                console.log(circ);
+                console.log(circ.getBounds());
+                map.fitBounds(
+                  circ.getBounds(),
+                  {
+                    padding: L.point(30, 30)
+                  }
+                );
+
+                drawControl.setDrawingOptions(
+                  {
+                    polygon: false,
+                    rectangle: false,
+                    polyline: false,
+                    marker: false,
+                    circle: false
+                  }
+                );
+
+              }
+            } else {
+              if (node.points.length >= 3) {
+                //console.log("found polygon ");
+                var corners = [];
+                for (x in node.points) {
+                  var latlng = L.latLng(node.points[x].latitude, node.points[x].longitude);
+                  corners.push(latlng);
+                }
+                var poly = L.polygon(
+                  corners
+                );
+                poly.addTo(drawnItems);
+                map.fitBounds(
+                  poly.getBounds(),
+                  {
+                    padding: L.point(30, 30)
+                  }
+                );
+
+                drawControl.setDrawingOptions(
+                  {
+                    polygon: false,
+                    rectangle: false,
+                    polyline: false,
+                    marker: false,
+                    circle: false
+                  }
+                );
+
+              }
+            }
+
+          }
+
+          var n = this;
+
+            console.log("loading leaflet");
+            $.getScript('node_static/geofence/leaflet/leaflet-src.js')
+            .done(function(data, textStatus, jqxhr) {
+              $.getScript('node_static/geofence/Leaflet.draw/dist/leaflet.draw.js')
+              .done(function(data, textStatus, jqxhr){
+                $.getScript('node_static/geofence/L.GeoSearch/src/js/l.control.geosearch.js')
+                .done(function(data, textStatus, jqxhr){
+                  $.getScript('node_static/geofence/L.GeoSearch/src/js/l.geosearch.provider.openstreetmap.js')
+                  .done(function(data, textStatus, jqxhr) {
+                    setupMap(n);
+
+                  })
+                  .fail(function(jqxhr, settings, exception ){
+                    console.log("failed4");
+                    console.log(exception);
+                    console.log(exception.stack);
+                  });
+                })
+                .fail(function(jqxhr, settings, exception ){
+                  console.log("failed3");
+                  console.log(exception);
+                  console.log(exception.stack);
+                });
+              })
+              .fail(function(jqxhr, settings, exception ){
+                console.log("failed2");
+                console.log(exception);
+                console.log(exception.stack);
+              });
+            })
+            .fail(function(jqxhr, settings, exception ) {
+              console.log("failed");
+              console.log(exception);
+              console.log(exception.stack);
+            });
+          
+        },
+        oneditsave: function() {
+          var map = window.node_geofence_map;
+          var n = this;
+          // n.mode = "circle";
+          // n.rad = 0;
+          // n.centre = {};
+          // n.points = [];
+
+          map.eachLayer(function(layer){
+            if (layer.shape === "geofence") {
+              console.log("GeoJSON");
+              console.log(layer.toGeoJSON());
+              if (layer._radius) {
+                n.mode = "circle";
+                n.centre = {latitude: layer._latlng.lat, longitude: layer._latlng.lng};
+                n.rad = layer._mRadius;
+                n.points = [];
+              } else {
+                n.mode ="polyline";
+                n.points = [];
+                n.rad = 0;
+                n.centre = {};
+                for (x in layer._latlngs) {
+                  n.points.push({latitude: layer._latlngs[x].lat, longitude: layer._latlngs[x].lng});
+                }
+              }
+            }
+          });
+          delete window.node_geofence_map;
+        }
+    });
+</script>
