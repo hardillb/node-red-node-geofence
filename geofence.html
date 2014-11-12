@@ -1,5 +1,5 @@
 <!--
-  Copyright 2013 IBM Corp.
+  Copyright 2014 IBM Corp.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,105 +14,87 @@
   limitations under the License.
 -->
 
-
-<!-- First, the content of the edit dialog is defined.                       -->
-
 <script type="text/x-red" data-template-name="geofence">
-   <!-- data-template-name identifies the node type this is for              -->
-
-   <!-- Each of the following divs creates a field in the edit dialog.       -->
-   <!-- Generally, there should be an input for each property of the node.   -->
-   <!-- The for and id attributes identify the corresponding property        --> 
-   <!-- (with the 'node-input-' prefix).                                     -->
-   <!-- The available icon classes are defined in Twitter Bootstrap          -->
-
-    <!-- By convention, most nodes have a 'name' property. The following div -->
-    <!-- provides the necessary field.   -->
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>  
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Geofence Name">
+    </div>
+
     <div class="form-row">
-      <label for="node-input-inside"><i class="icon-tag"></i> Allow Points </label>
-      <select id="node-input-inside" value="true">
-        <option value="true">inside</option>
-        <option value="false">outside</option>
+      <label for="node-input-inside"><i class="fa fa-sign-in"></i> Allow</label>
+      <select id="node-input-inside" value="true" style="width: 340px;">
+        <option value="true">only points inside</option>
+        <option value="false">only points outside</option>
       </select>
     </div>
+
     <div class="form-row">
-      <label for="node-input-mode"><i class="icon-tag"></i> Zone type </label>
-      <select id="node-input-mode" value="circle">
-        <option value="circle">Circle</option>
-        <option value="rectangle">Rectangle</option>
+      <label for="node-input-mode"><i class="fa fa-check-circle-o"></i> Zone type</label>
+      <select id="node-input-mode" value="circle" style="width: 340px;">
+        <option value="circle">circle</option>
+        <option value="rectangle">rectangle</option>
       </select>
     </div>
 
     <div id="node-geofence-circle">
       <div class="form-row">
-        <label for="node-input-centreLat"><i class="icon-map-marker"></i> Centre</label>
+        <label for="node-input-centreLat"><i class="fa fa-dot-circle-o"></i> Centre</label>
         <input type="text" style="width: 30%" id="node-input-centreLat" placeholder="latitude">
         <span>,</span>
         <input type="text" style="width: 30%" id="node-input-centreLng" placeholder="longitude">
       </div>
 
       <div class="form-row">
-        <label for="node-input-rad"><i class="icon-map-marker"></i> Radius </label>
+        <label for="node-input-rad"><i class="fa fa-arrows"></i> Radius</label>
         <input type="text" style="width: 60%" id="node-input-rad" placeholder="distance"> <span>(m)</span>
       </div>
     </div>
 
     <div id="node-geofence-rectangle">
       <div class="form-row">
-        <label for="node-input-centreLat"><i class="icon-map-marker"></i> North West</label>
+        <label for="node-input-centreLat"><i class="fa fa-map-marker"></i> North West</label>
         <input type="text" style="width: 30%" id="node-input-NWLat" placeholder="latitude">
         <span>,</span>
         <input type="text" style="width: 30%" id="node-input-NWLng" placeholder="longitude">
       </div>
 
       <div class="form-row">
-        <label for="node-input-centreLat"><i class="icon-map-marker"></i> South East</label>
+        <label for="node-input-centreLat"><i class="fa fa-map-marker"></i> South East</label>
         <input type="text" style="width: 30%" id="node-input-SELat" placeholder="latitude">
         <span>,</span>
         <input type="text" style="width: 30%" id="node-input-SELng" placeholder="longitude">
       </div>
     <div>
-   
+
 </script>
 
 
-<!-- Next, some simple help text is provided for the node.                   -->
 <script type="text/x-red" data-help-name="geofence">
-   <!-- data-help-name identifies the node type this help is for             -->
-   <!-- This content appears in the Info sidebar when a node is selected     -->
-   <!-- The first <p> is used as the pop-up tool tip when hovering over a    -->
-   <!-- node in the palette.                                                 -->
    <p>A simple geofence filter node</p>
-   <p>It supports two shapes, circle and rectangles, and will filter all 
+   <p>It supports two shapes, circle and rectangles, and will filter all
    messages that either fall inside or outside the region described depending
    on the selected mode</p>
 </script>
 
-<!-- Finally, the node type is registered along with all of its properties   -->
-<!-- The example below shows a small subset of the properties that can be set-->
 <script type="text/javascript">
     RED.nodes.registerType('geofence',{
-        category: 'location',      // the palette category
+        category: 'location',
         color:"GoldenRod",
-        defaults: {             // defines the editable properties of the node
-            name: {value:"Geofence"},   //  along with default values.
+        defaults: {
+            name: {value:""},
             mode: {value: "circle"},
             inside: {value: "true"},
-            rad: {value: 0},
+            rad: {value: ""},
             points: {value: []},
-            centre: {value: {latitude:0.0, longitude: 0.0}}
+            centre: {value: {}}
         },
-        inputs:1,                // set the number of inputs - only 0 or 1
-        outputs:1,               // set the number of outputs - 0 to n
-        icon: "white-globe.png",    // set the icon (held in public/icons)
-        label: function() {      // sets the default label contents
+        inputs:1,
+        outputs:1,
+        icon: "white-globe.png",
+        label: function() {
             return this.name||"geofence";
         },
-        labelStyle: function() { // sets the class to apply to the label
+        labelStyle: function() {
             return this.name?"node_label_italic":"";
         },
         oneditprepare: function() {
@@ -152,6 +134,5 @@
             this.points.push({latitude: $("#node-input-SELat").val(), longitude: $("#node-input-NWLng").val()});
           }
         }
-
     });
 </script>

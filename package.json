@@ -1,6 +1,6 @@
 {
     "name": "node-red-node-geofence",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "A simple node to filter based on location",
     "readme": "A simple node to filter messages based on location",
     "dependencies" :{
@@ -17,9 +17,14 @@
             "geofence": "geofence.js"
         }
     },
-    "author": {
+    "contributors": [
+    {
         "name": "Benjamin Hardill",
         "email": "hardillb@gmail.com",
         "url": "http://www.hardill.me.uk/wordpress/"
+    },
+    {
+        "name": "Dave Conway-Jones"
     }
+    ]
 }
