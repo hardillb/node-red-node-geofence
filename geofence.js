@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 IBM Corp.
+ * Copyright 2014 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,45 +14,61 @@
  * limitations under the License.
  **/
 
-// Require main module
-//var RED = require(process.env.NODE_RED_HOME+"/red/red");
 module.exports = function(RED) {
+    "use strict";
+    var geolib = require('geolib');
 
-var geolib = require('geolib');
+    function geofenceNode(n) {
+        RED.nodes.createNode(this,n);
+        this.mode = n.mode;
+        this.name = n.name;
+        this.centre = n.centre;
+        this.points = n.points;
+        this.radius = n.rad;
+        this.inside = n.inside;
+        var node = this;
 
-function geofenceNode(n) {
-	RED.nodes.createNode(this, n);
-	this.mode = n.mode;
-	this.centre = n.centre;
-	this.points = n.points;
-	this.radius = n.rad;
-	this.inside = n.inside;
+        node.on('input', function(msg) {
+            if (msg.location) {
+                var loc = {
+                    latitude: msg.location.lat,
+                    longitude: msg.location.lon
+                };
+                var inout = false;
+                if (node.mode === 'circle') {
+                    inout = geolib.isPointInCircle( loc, node.centre, Math.round(node.radius) );
+                } else {
+                    inout = geolib.isPointInside( loc, node.points );
+                }
 
-	var node = this;
+                if (inout && (node.inside === "true")) {
+                    if (node.name) { msg.location.isat = node.name; }
+                    node.send(msg);
+                }
 
-	this.on('input', function(msg){
-		if (msg.location) {
-			var loc = msg.location;
-			if (node.mode ==='circle') {
-				if (geolib.isPointInCircle(
-						msg.location,
-						node.centre,
-						Math.round(node.radius)
-					) === (node.inside == "true")) {
-					node.send(msg);
-				}
-			} else {
-				if (geolib.isPointInside(
-						msg.location,
-						node.points
-					) === (node.inside == "true")) {
-					node.send(msg);
-				}
+                if (!inout && (node.inside === "false")) {
+                    node.send(msg);
+                }
 
-			}
-		}
-	});
-};
-
-RED.nodes.registerType("geofence",geofenceNode);
+                if (node.inside === "both") {
+                    msg.location.inarea = inout;
+                    if (node.name) { // if there is a name
+                        msg.location.isat = msg.location.isat || [];
+                        if (inout) { // if inside then add name to an array
+                            msg.location.isat.push(node.name);
+                        }
+                        else { // if outside remove name from array
+                            if (msg.location.hasOwnProperty("isat")) {
+                                var i = msg.location.isat.indexOf(node.name);
+                                if (i > -1) { msg.location.isat.splice(i, 1); }
+                            }
+                        }
+                        msg.location.inarea = msg.location.isat.length;
+                    }
+                    node.send(msg);
+                }
+            }
+        });
+    }
+    RED.nodes.registerType("geofence",geofenceNode);
 };

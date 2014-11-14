@@ -21,10 +21,11 @@
     </div>
 
     <div class="form-row">
-      <label for="node-input-inside"><i class="fa fa-sign-in"></i> Allow</label>
+      <label for="node-input-inside"><i class="fa fa-sign-in"></i> Action</label>
       <select id="node-input-inside" value="true" style="width: 340px;">
         <option value="true">only points inside</option>
         <option value="false">only points outside</option>
+        <option value="both">inarea property</option>
       </select>
     </div>
 
@@ -74,12 +75,13 @@
    <p>It supports two shapes, circle and rectangles, and will filter all
    messages that either fall inside or outside the region described depending
    on the selected mode</p>
+   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg.</p>
 </script>
 
 <script type="text/javascript">
     RED.nodes.registerType('geofence',{
         category: 'location',
-        color:"GoldenRod",
+        color:"#DEBD5C",
         defaults: {
             name: {value:""},
             mode: {value: "circle"},
