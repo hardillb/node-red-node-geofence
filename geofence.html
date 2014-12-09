@@ -16,57 +16,25 @@
 
 <script type="text/x-red" data-template-name="geofence">
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Geofence Name">
+      <link rel="stylesheet" href="http://www.hardill.me.uk/geofence/leaflet/leaflet.css" />
+      <link rel="stylesheet" href="http://www.hardill.me.uk/geofence/Leaflet.draw/dist/leaflet.draw.css" />
+      <link rel="stylesheet" href="http://www.hardill.me.uk/geofence/L.GeoSearch/src/css/l.geosearch.css" />
+      <div id="node-geofence-map" style="width: 100%; height: 400px"></div>
     </div>
 
     <div class="form-row">
       <label for="node-input-inside"><i class="fa fa-sign-in"></i> Action</label>
-      <select id="node-input-inside" value="true" style="width: 340px;">
+      <select id="node-input-inside" value="true" style="width: 70%;">
         <option value="true">only points inside</option>
         <option value="false">only points outside</option>
-        <option value="both">inarea property</option>
+        <option value="both">add "inarea" property</option>
       </select>
     </div>
 
     <div class="form-row">
-      <label for="node-input-mode"><i class="fa fa-check-circle-o"></i> Zone type</label>
-      <select id="node-input-mode" value="circle" style="width: 340px;">
-        <option value="circle">circle</option>
-        <option value="rectangle">rectangle</option>
-      </select>
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Geofence name">
     </div>
-
-    <div id="node-geofence-circle">
-      <div class="form-row">
-        <label for="node-input-centreLat"><i class="fa fa-dot-circle-o"></i> Centre</label>
-        <input type="text" style="width: 30%" id="node-input-centreLat" placeholder="latitude">
-        <span>,</span>
-        <input type="text" style="width: 30%" id="node-input-centreLng" placeholder="longitude">
-      </div>
-
-      <div class="form-row">
-        <label for="node-input-rad"><i class="fa fa-arrows"></i> Radius</label>
-        <input type="text" style="width: 60%" id="node-input-rad" placeholder="distance"> <span>(m)</span>
-      </div>
-    </div>
-
-    <div id="node-geofence-rectangle">
-      <div class="form-row">
-        <label for="node-input-centreLat"><i class="fa fa-map-marker"></i> North West</label>
-        <input type="text" style="width: 30%" id="node-input-NWLat" placeholder="latitude">
-        <span>,</span>
-        <input type="text" style="width: 30%" id="node-input-NWLng" placeholder="longitude">
-      </div>
-
-      <div class="form-row">
-        <label for="node-input-centreLat"><i class="fa fa-map-marker"></i> South East</label>
-        <input type="text" style="width: 30%" id="node-input-SELat" placeholder="latitude">
-        <span>,</span>
-        <input type="text" style="width: 30%" id="node-input-SELng" placeholder="longitude">
-      </div>
-    <div>
-
 </script>
 
 
@@ -74,7 +42,7 @@
    <p>A simple geofence filter node</p>
    <p>It supports two shapes, circle and rectangles, and will filter all
    messages that either fall inside or outside the region described depending
-   on the selected mode</p>
+   on the selected mode.</p>
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg.</p>
 </script>
 
@@ -86,9 +54,9 @@
             name: {value:""},
             mode: {value: "circle"},
             inside: {value: "true"},
-            rad: {value: ""},
+            rad: {value: 0},
             points: {value: []},
-            centre: {value: {}}
+            centre: {value: {latitude:0.0, longitude: 0.0}}
         },
         inputs:1,
         outputs:1,
@@ -99,42 +67,183 @@
         labelStyle: function() {
             return this.name?"node_label_italic":"";
         },
-        oneditprepare: function() {
-          $("#node-input-mode").on ('change',function() {
-            $(this).each(function(){
-              if (this.value === "circle") {
-                $("#node-geofence-rectangle").hide();
-                $("#node-geofence-circle").show();
-              } else {
-                $("#node-geofence-rectangle").show();
-                $("#node-geofence-circle").hide();
+        oneditprepare: function () {
+          function setupMap(node) {
+            var map = L.map('node-geofence-map').setView([50.9025, -1.4042], 9);
+
+            window.node_geofence_map = map;
+            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 20,
+              attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            var drawControl = new L.Control.Draw({
+              draw: {
+                  position: 'topleft',
+                  polyline: false,
+                  marker: false,
+                  circle: {
+                      shapeOptions: {
+                        color: '#662d91'
+                      }
+                    }
+              },
+              edit: false
+            });
+            map.addControl(drawControl);
+
+            var drawControl2 = new L.Control.Draw({
+              draw: false,
+              edit: {
+                featureGroup: drawnItems
               }
             });
-          });
 
-          if (this.mode === "circle") {
-            $("#node-input-centreLat").val(this.centre.latitude);
-            $("#node-input-centreLng").val(this.centre.longitude);
-          } else {
-            if (this.points.length == 4) {
-              $("#node-input-NWLat").val(this.points[0].latitude);
-              $("#node-input-NWLng").val(this.points[0].longitude);
-              $("#node-input-SELat").val(this.points[2].latitude);
-              $("#node-input-SELng").val(this.points[2].longitude);
+            map.on('draw:created', function (e) {
+              console.log("created",e);
+              var type = e.layerType;    // never used ???
+              var layer = e.layer;
+              layer.shape = "geofence";
+              drawnItems.addLayer(layer);
+              drawControl.removeFrom(map);
+              drawControl2.addTo(map);
+            });
+
+            map.on('draw:edited', function (e) {
+                console.log("edited",e);
+                var layers = e.layers;
+                layers.eachLayer(function (layer) {
+                    layer.shape = "geofence";
+                    drawnItems.addLayer(layer);
+                });
+            });
+
+            map.on('draw:deleted', function (e) {
+              console.log("deleted",e);
+              //re-enable drawing
+              drawControl2.removeFrom(map);
+              drawControl.addTo(map);
+            });
+
+            new L.Control.GeoSearch({
+              provider: new L.GeoSearch.Provider.OpenStreetMap(),
+              position: 'topcenter',
+              showMarker: false,
+              zoomLevel: 12
+            }).addTo(map);
+
+            if (node.mode === "circle") {
+              if (node.rad != 0) {
+                //console.log("found circle - ");
+                var circ = L.circle(
+                  [node.centre.latitude, node.centre.longitude],
+                  node.rad,
+                  { color: '#662d91' }
+                );
+                circ.addTo(drawnItems);
+                console.log(circ);
+                console.log(circ.getBounds());
+                map.fitBounds(
+                  circ.getBounds(),
+                  { padding: L.point(30, 30) }
+                );
+                drawControl.removeFrom(map);
+                drawControl2.addTo(map);
+              }
+
+            } else {
+              if (node.points.length >= 3) {
+                //console.log("found polygon ");
+                var corners = [];
+                for (x in node.points) {
+                  var latlng = L.latLng(node.points[x].latitude, node.points[x].longitude);
+                  corners.push(latlng);
+                }
+                var poly = L.polygon(
+                  corners
+                );
+                poly.addTo(drawnItems);
+                map.fitBounds(
+                  poly.getBounds(),
+                  { padding: L.point(30, 30) }
+                );
+                drawControl.removeFrom(map);
+                drawControl2.addTo(map);
+              }
             }
+
           }
+
+          var n = this;
+            console.log("loading leaflet");
+            $.getScript('http://www.hardill.me.uk/geofence/leaflet/leaflet-src.js')
+            .done(function(data, textStatus, jqxhr) {
+              $.getScript('http://www.hardill.me.uk/geofence/Leaflet.draw/dist/leaflet.draw.js')
+              .done(function(data, textStatus, jqxhr){
+                $.getScript('http://www.hardill.me.uk/geofence/L.GeoSearch/src/js/l.control.geosearch.js')
+                .done(function(data, textStatus, jqxhr){
+                  $.getScript('http://www.hardill.me.uk/geofence/L.GeoSearch/src/js/l.geosearch.provider.openstreetmap.js')
+                  .done(function(data, textStatus, jqxhr) {
+                    setupMap(n);
+
+                  })
+                  .fail(function(jqxhr, settings, exception ){
+                    console.log("failed4");
+                    console.log(exception);
+                    console.log(exception.stack);
+                  });
+                })
+                .fail(function(jqxhr, settings, exception ){
+                  console.log("failed3");
+                  console.log(exception);
+                  console.log(exception.stack);
+                });
+              })
+              .fail(function(jqxhr, settings, exception ){
+                console.log("failed2");
+                console.log(exception);
+                console.log(exception.stack);
+              });
+            })
+            .fail(function(jqxhr, settings, exception ) {
+              console.log("failed");
+              console.log(exception);
+              console.log(exception.stack);
+            });
+
         },
         oneditsave: function() {
-          if (this.mode === "circle") {
-            this.centre.latitude = $("#node-input-centreLat").val();
-            this.centre.longitude = $("#node-input-centreLng").val();
-          } else {
-            this.points = [];
-            this.points.push({latitude: $("#node-input-NWLat").val(), longitude: $("#node-input-NWLng").val()});
-            this.points.push({latitude: $("#node-input-NWLat").val(), longitude: $("#node-input-SELng").val()});
-            this.points.push({latitude: $("#node-input-SELat").val(), longitude: $("#node-input-SELng").val()});
-            this.points.push({latitude: $("#node-input-SELat").val(), longitude: $("#node-input-NWLng").val()});
-          }
+          var map = window.node_geofence_map;
+          var n = this;
+          // n.mode = "circle";
+          // n.rad = 0;
+          // n.centre = {};
+          // n.points = [];
+
+          map.eachLayer(function(layer){
+            if (layer.shape === "geofence") {
+              console.log("GeoJSON");
+              console.log(layer.toGeoJSON());
+              if (layer._radius) {
+                n.mode = "circle";
+                n.centre = {latitude: layer._latlng.lat, longitude: layer._latlng.lng};
+                n.rad = layer._mRadius;
+                n.points = [];
+              } else {
+                n.mode ="polyline";
+                n.points = [];
+                n.rad = 0;
+                n.centre = {};
+                for (x in layer._latlngs) {
+                  n.points.push({latitude: layer._latlngs[x].lat, longitude: layer._latlngs[x].lng});
+                }
+              }
+            }
+          });
+          delete window.node_geofence_map;
         }
     });
 </script>

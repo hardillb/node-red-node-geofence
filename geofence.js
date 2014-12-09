@@ -17,6 +17,7 @@
 module.exports = function(RED) {
     "use strict";
     var geolib = require('geolib');
+    var path= require('path');
 
     function geofenceNode(n) {
         RED.nodes.createNode(this,n);
@@ -71,4 +72,9 @@ module.exports = function(RED) {
         });
     }
     RED.nodes.registerType("geofence",geofenceNode);
+
+    RED.httpAdmin.get('/geofence/js/*', function(req, res){
+        var filename = path.join(__dirname , 'static', req.params[0]);
+        res.sendfile(filename);
+    });
 };
