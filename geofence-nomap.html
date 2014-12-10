@@ -72,11 +72,13 @@
 
 <script type="text/x-red" data-help-name="geofence">
    <p>A simple geofence filter node</p>
-   <p>It supports two shapes, circle and rectangles, and will filter all
-   messages that either fall inside or outside the region described depending
-   on the selected mode</p>
+   <p>It supports circle and polygons, and will filter all messages that either
+      fall inside or outside the region described depending on the selected
+      mode.</p>
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg.</p>
-   <p>This node uses the msg.location.lat &amp; msg.location.lon values.</p>
+   <p>If the node is given a name property then <b>msg.isat</b> will be an array
+   containing a list of named areas that the point is inside of.</p>
+   <p>This node requires inputs with <i>msg.location.lat</i> &amp; <i>msg.location.lon</i> values.</p>
 </script>
 
 <script type="text/javascript">
