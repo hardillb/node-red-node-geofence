@@ -57,6 +57,7 @@ module.exports = function(RED) {
                         msg.location.isat = msg.location.isat || [];
                         if (inout) { // if inside then add name to an array
                             msg.location.isat.push(node.name);
+                            }
                         }
                         else { // if outside remove name from array
                             if (msg.location.hasOwnProperty("isat")) {
@@ -65,6 +66,17 @@ module.exports = function(RED) {
                             }
                         }
                         msg.location.inarea = msg.location.isat.length;
+
+                        //add distrance to centroid of area
+                        var distance;
+                        if (node.mode === 'circle') {
+                            distance = geolib.getDistance(node.centre, loc);
+                        } else {
+                            var centroid = geolib.getCenter(node.points);
+                            distance = geolib.getDistance(centroid, loc);
+                        }
+                        msg.location.distances = msg.location.distances || [];
+                        msg.location.distances.[node.name] = distance;
                     }
                     node.send(msg);
                 }
