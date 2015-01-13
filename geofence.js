@@ -43,7 +43,10 @@ module.exports = function(RED) {
                 }
 
                 if (inout && (node.inside === "true")) {
-                    if (node.name) { msg.location.isat = node.name; }
+                    if (node.name) { 
+                        msg.location.isat = msg.location.isat || [];
+                        msg.location.isat.push(node.name);
+                    }
                     node.send(msg);
                 }
 
@@ -52,17 +55,18 @@ module.exports = function(RED) {
                 }
 
                 if (node.inside === "both") {
-                    msg.location.inarea = inout;
+                    msg.location.inarea = (inout === 1);
                     if (node.name) { // if there is a name
                         msg.location.isat = msg.location.isat || [];
                         if (inout) { // if inside then add name to an array
                             msg.location.isat.push(node.name);
-                            }
                         }
                         else { // if outside remove name from array
                             if (msg.location.hasOwnProperty("isat")) {
                                 var i = msg.location.isat.indexOf(node.name);
-                                if (i > -1) { msg.location.isat.splice(i, 1); }
+                                if (i > -1) {
+                                    msg.location.isat.splice(i, 1);
+                                }
                             }
                         }
                         msg.location.inarea = msg.location.isat.length;
@@ -76,7 +80,9 @@ module.exports = function(RED) {
                             distance = geolib.getDistance(centroid, loc);
                         }
                         msg.location.distances = msg.location.distances || [];
-                        msg.location.distances.[node.name] = distance;
+                        var d = {};
+                        d[node.name] = distance;
+                        msg.location.distances.push(d);
                     }
                     node.send(msg);
                 }
