@@ -92,7 +92,14 @@ module.exports = function(RED) {
     RED.nodes.registerType("geofence",geofenceNode);
 
     RED.httpAdmin.get('/geofence/js/*', function(req, res){
-        var filename = path.join(__dirname , 'static', req.params[0]);
-        res.sendfile(filename);
+        var options = {
+            root: __dirname + '/static/',
+            dotfiles: 'deny'
+        };
+
+        res.sendFile(req.params[0], options);
+
+        // var filename = path.join(__dirname , 'static', req.params[0]);
+        // res.sendfile(filename);
     });
 };

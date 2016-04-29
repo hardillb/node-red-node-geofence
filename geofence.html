@@ -249,6 +249,10 @@
             }
           });
           delete window.node_geofence_map;
+        },
+        oneditresize: function(){
+          var map = window.node_geofence_map;
+          map.invalidateSize(true);
         }
     });
 </script>
