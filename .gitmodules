@@ -1,0 +1,6 @@
+[submodule "static/Leaflet.draw"]
+	path = static/Leaflet.draw
+	url = https://github.com/Leaflet/Leaflet.draw.git
+[submodule "static/L.GeoSearch"]
+	path = static/L.GeoSearch
+	url = https://github.com/smeijer/L.GeoSearch.git
