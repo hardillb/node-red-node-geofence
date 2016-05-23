@@ -36,10 +36,15 @@ module.exports = function(RED) {
                     latitude: msg.location.lat,
                     longitude: msg.location.lon
                 };
-            } else if (msg.loc && msg.lat) {
+            } else if (msg.lon && msg.lat) {
                 loc = {
                     latitude: msg.lat,
                     longitude: msg.lon
+                };
+            } else if (typeof(msg.payload) === 'object' && msg.payload.lat && msg.payload.lon) {
+                loc = {
+                    latitude: msg.payload.lat,
+                    longitude: msg.payload.lon
                 };
             }
 
