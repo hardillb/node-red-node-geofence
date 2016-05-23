@@ -58,6 +58,9 @@ module.exports = function(RED) {
 
                 if (inout && (node.inside === "true")) {
                     if (node.name) { 
+                        if (!msg.location) {
+                            msg.location = {};
+                        }
                         msg.location.isat = msg.location.isat || [];
                         msg.location.isat.push(node.name);
                     }
@@ -69,6 +72,9 @@ module.exports = function(RED) {
                 }
 
                 if (node.inside === "both") {
+                    if (!msg.location) {
+                        msg.location = {};
+                    }
                     msg.location.inarea = (inout === 1);
                     if (node.name) { // if there is a name
                         msg.location.isat = msg.location.isat || [];
