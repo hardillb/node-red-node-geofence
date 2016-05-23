@@ -135,7 +135,7 @@
 
             new L.Control.GeoSearch({
               provider: new L.GeoSearch.Provider.OpenStreetMap(),
-              position: 'topcenter',
+              position: 'bottomleft',
               showMarker: false,
               zoomLevel: 12
             }).addTo(map);
@@ -179,7 +179,7 @@
                 drawControl2.addTo(map);
               }
             }
-
+            map.invalidateSize(true);
           }
 
           var n = this;
@@ -223,10 +223,6 @@
         oneditsave: function() {
           var map = window.node_geofence_map;
           var n = this;
-          // n.mode = "circle";
-          // n.rad = 0;
-          // n.centre = {};
-          // n.points = [];
 
           map.eachLayer(function(layer){
             if (layer.shape === "geofence") {
@@ -251,8 +247,9 @@
           delete window.node_geofence_map;
         },
         oneditresize: function(){
-          var map = window.node_geofence_map;
-          map.invalidateSize(true);
+          if (window.node_geofence_map) {
+            window.node_geofence_map.invalidateSize(true);
+          }
         }
     });
 </script>

@@ -30,11 +30,20 @@ module.exports = function(RED) {
         var node = this;
 
         node.on('input', function(msg) {
+            var loc = undefined;
             if (msg.location) {
-                var loc = {
+                loc = {
                     latitude: msg.location.lat,
                     longitude: msg.location.lon
                 };
+            } else if (msg.loc && msg.lat) {
+                loc = {
+                    latitude: msg.lat,
+                    longitude: msg.lon
+                };
+            }
+
+            if (loc) {
                 var inout = false;
                 if (node.mode === 'circle') {
                     inout = geolib.isPointInCircle( loc, node.centre, Math.round(node.radius) );
