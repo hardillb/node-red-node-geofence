@@ -31,7 +31,8 @@ module.exports = function(RED) {
 
         node.on('input', function(msg) {
             var loc = undefined;
-            if (msg.location) {
+
+            if (msg.location && msg.location.lat && msg.location.lon) {
                 loc = {
                     latitude: msg.location.lat,
                     longitude: msg.location.lon
