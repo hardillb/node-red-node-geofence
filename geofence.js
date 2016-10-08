@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 IBM Corp.
+ * Copyright 2016 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,8 @@ module.exports = function(RED) {
                     if (!msg.location) {
                         msg.location = {};
                     }
-                    msg.location.inarea = (inout === 1);
+
+                    msg.location.inarea = inout;
                     if (node.name) { // if there is a name
                         msg.location.isat = msg.location.isat || [];
                         if (inout) { // if inside then add name to an array
