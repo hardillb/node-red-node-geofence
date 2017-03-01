@@ -48,6 +48,26 @@ module.exports = function(RED) {
                     longitude: msg.payload.lon
                 };
             }
+			
+			if (node.name) {//add shape to list of areas of interest if it has a name
+				var flowContext = this.context().flow;
+				var shapes = flowContext.get('shapes') || {};
+				if(! shapes[node.name]) {
+					if (node.mode === 'circle') {
+	                    shapes[node.name] = {
+							mode: node.mode,
+							centre: node.centre,
+							radius: node.radius
+						};
+	                } else {
+	                    shapes[node.name] = {
+							mode: node.mode,
+							points: node.points
+						};
+	                }
+					flowContext.set('shapes', shapes);
+				}
+			}
 
             if (loc) {
                 var inout = false;
@@ -105,6 +125,23 @@ module.exports = function(RED) {
                         var d = {};
                         d[node.name] = distance;
                         msg.location.distances.push(d);
+
+						var shapes = msg.shapes || {};
+						if(! shapes[node.name]) {
+							if (node.mode === 'circle') {
+			                    shapes[node.name] = {
+									mode: node.mode,
+									centre: node.centre,
+									radius: node.radius
+								};
+			                } else {
+			                    shapes[node.name] = {
+									mode: node.mode,
+									points: node.points
+								};
+			                }
+						}
+
                     }
                     node.send(msg);
                 }
