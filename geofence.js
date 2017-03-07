@@ -126,8 +126,8 @@ module.exports = function(RED) {
                         d[node.name] = distance;
                         msg.location.distances.push(d);
 
-                        msg.locations.shapes = msg.locations.shapes || {};
-                        var shapes = msg.locations.shapes;
+                        msg.location.shapes = msg.location.shapes || {};
+                        var shapes = msg.location.shapes;
                         if(! shapes[node.name]) {
                             if (node.mode === 'circle') {
                                 shapes[node.name] = {
