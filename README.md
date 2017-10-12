@@ -21,7 +21,8 @@ chaining of geofence nodes).
 
 The list is stored in msg.location.isat in the following format:
 
-```msg.location: {
+```
+msg.location: {
     inarea: true,
     isat: [
       'firstArea',
@@ -31,7 +32,8 @@ The list is stored in msg.location.isat in the following format:
       'firstArea': 100,
       'secondArea': 15
     }
-}```
+}
+```
 
 
 And also includes the distance from the centre (or centroid for polygons) of the
