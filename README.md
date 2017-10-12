@@ -36,7 +36,7 @@ msg.location: {
 ```
 
 
-And also includes the distance from the centre (or centroid for polygons) of the
+And also includes the distance in meters from the centre (or centroid for polygons) of the
 region. 
 
 The config node uses leaflet and openstreetmap data so requires internet access. 
