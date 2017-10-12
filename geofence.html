@@ -43,13 +43,17 @@
    <p>It supports circle and polygons, and will filter all messages that either
       fall inside or outside the region described depending on the selected 
       mode.</p>
-   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg.</p>
-   <p>If the node is given a name property then <b>msg.location.isat</b> will be an array
-   containing a list of named areas that the point is inside of and <b>msg.location.distance</b>
-   will contain an array of name, distance pairs. Where distance is the dinstance in metres to 
+   <p>This node requires input messages one of the following (checked in order):
+    <ul>
+      <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
+      <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
+      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
+   </p>
+   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
+   <p>In this mode if the node is has a name then <b>msg.location.isat</b> will be an array
+   containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
+   will contain an object of name, distance pairs. Where distance is the distance in metres to 
    from the point to the centroid of the region.</p>
-   <p>This node requires inputs with <i>msg.location.lat</i> &amp; <i>msg.location.lon</i>  
-   or <i>msg.lat</i> &amp; <i>msg.lon</i> values.</p>
 </script>
 
 <script type="text/javascript">

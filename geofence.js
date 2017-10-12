@@ -32,41 +32,21 @@ module.exports = function(RED) {
         node.on('input', function(msg) {
             var loc = undefined;
 
-            if (msg.location && msg.location.lat && msg.location.lon) {
+            if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
                 loc = {
                     latitude: msg.location.lat,
                     longitude: msg.location.lon
                 };
-            } else if (msg.lon && msg.lat) {
+            } else if (msg.hasOwnProperty('lon') && msg.hasOwnProperty('lat')) {
                 loc = {
                     latitude: msg.lat,
                     longitude: msg.lon
                 };
-            } else if (typeof(msg.payload) === 'object' && msg.payload.lat && msg.payload.lon) {
+            } else if (typeof(msg.payload) === 'object' && msg.payload.hasOwnProperty('lat') && msg.payload.hasOwnProperty('lon')) {
                 loc = {
                     latitude: msg.payload.lat,
                     longitude: msg.payload.lon
                 };
-            }
-            
-            if (node.name) {//add shape to list of areas of interest if it has a name
-                var flowContext = this.context().flow;
-                var shapes = flowContext.get('shapes') || {};
-                if(! shapes[node.name]) {
-                    if (node.mode === 'circle') {
-                        shapes[node.name] = {
-                            mode: node.mode,
-                            centre: node.centre,
-                            radius: node.radius
-                        };
-                    } else {
-                        shapes[node.name] = {
-                            mode: node.mode,
-                            points: node.points
-                        };
-                    }
-                    flowContext.set('shapes', shapes);
-                }
             }
 
             if (loc) {
@@ -93,11 +73,12 @@ module.exports = function(RED) {
                 }
 
                 if (node.inside === "both") {
-                    if (!msg.location) {
+                    if (!msg.hasOwnProperty("location")) {
                         msg.location = {};
                     }
 
                     msg.location.inarea = inout;
+
                     if (node.name) { // if there is a name
                         msg.location.isat = msg.location.isat || [];
                         if (inout) { // if inside then add name to an array
@@ -111,7 +92,6 @@ module.exports = function(RED) {
                                 }
                             }
                         }
-                        msg.location.inarea = msg.location.isat.length;
 
                         //add distrance to centroid of area
                         var distance;
@@ -121,27 +101,8 @@ module.exports = function(RED) {
                             var centroid = geolib.getCenter(node.points);
                             distance = geolib.getDistance(centroid, loc);
                         }
-                        msg.location.distances = msg.location.distances || [];
-                        var d = {};
-                        d[node.name] = distance;
-                        msg.location.distances.push(d);
-
-                        var shapes = msg.shapes || {};
-                        if(! shapes[node.name]) {
-                            if (node.mode === 'circle') {
-                                shapes[node.name] = {
-                                    mode: node.mode,
-                                    centre: node.centre,
-                                    radius: node.radius
-                                };
-                            } else {
-                                shapes[node.name] = {
-                                    mode: node.mode,
-                                    points: node.points
-                                };
-                            }
-                        }
-
+                        msg.location.distances = msg.location.distances || {};
+                        msg.location.distances[node.name] = distance;
                     }
                     node.send(msg);
                 }
