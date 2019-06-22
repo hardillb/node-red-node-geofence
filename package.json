@@ -1,6 +1,6 @@
 {
     "name": "node-red-node-geofence",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "A simple node to filter based on location",
     "dependencies" :{
         "geolib": "^2.0.0"
@@ -17,13 +17,13 @@
         }
     },
     "contributors": [
-    {
-        "name": "Benjamin Hardill",
-        "email": "hardillb@gmail.com",
-        "url": "http://www.hardill.me.uk/wordpress/"
-    },
-    {
-        "name": "Dave Conway-Jones"
-    }
+        {
+            "name": "Benjamin Hardill",
+            "email": "hardillb@gmail.com",
+            "url": "http://www.hardill.me.uk/wordpress/"
+        },
+        {
+            "name": "Dave Conway-Jones"
+        }
     ]
 }
