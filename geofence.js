@@ -29,8 +29,10 @@ module.exports = function(RED) {
         this.inside = n.inside;
         var node = this;
 
-        node.on('input', function(msg) {
+        node.on('input', function(msg, send, done) {
             var loc = undefined;
+
+            send = send || function() { node.send.apply(node,arguments) }
 
             if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
                 loc = {
@@ -65,11 +67,19 @@ module.exports = function(RED) {
                         msg.location.isat = msg.location.isat || [];
                         msg.location.isat.push(node.name);
                     }
-                    node.send(msg);
+                    send(msg);
+                    if (done) {
+                        done();
+                    }
+                    return
                 }
 
                 if (!inout && (node.inside === "false")) {
-                    node.send(msg);
+                    send(msg);
+                    if (done) {
+                        done();
+                    }
+                    return;
                 }
 
                 if (node.inside === "both") {
@@ -104,7 +114,18 @@ module.exports = function(RED) {
                         msg.location.distances = msg.location.distances || {};
                         msg.location.distances[node.name] = distance;
                     }
-                    node.send(msg);
+                    send(msg);
+                    if (done) {
+                        done();
+                    }
+                    return;
+                }
+            } else {
+                //no location
+                if (done) {
+                    done("No location found in message")
+                } else {
+                    node.error("No location found in message", msg);
                 }
             }
         });
