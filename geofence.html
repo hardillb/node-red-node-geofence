@@ -14,21 +14,29 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="geofence">
+<script type="text/html" data-template-name="geofence">
     <div>
-      <link rel="stylesheet" href="geofence/js/leaflet/leaflet.css" />
-      <link rel="stylesheet" href="geofence/js/Leaflet.draw/dist/leaflet.draw.css" />
-      <link rel="stylesheet" href="geofence/js/L.GeoSearch/src/css/l.geosearch.css" />
-      <div id="node-geofence-map" style="width: 100%; height: 400px"></div>
+        <link rel="stylesheet" href="geofence/js/leaflet/leaflet.css" />
+        <link rel="stylesheet" href="geofence/js/Leaflet.draw/dist/leaflet.draw.css" />
+        <link rel="stylesheet" href="geofence/js/L.GeoSearch/src/css/l.geosearch.css" />
+        <div id="node-geofence-map" style="width: 100%; height: 400px"></div>
+    </div>
+
+    <br/>
+    <div class="form-row">
+        <label for="node-input-floor"> _ Floor</label>
+        <input type="text" id="node-input-floor" style="width:25%;" placeholder="ground">
+        <span style="padding-left:30px; padding-right:8px"> &#8254; Ceiling</span>
+        <input type="text" id="node-input-ceiling" style="width:25%;" placeholder="infinity">
     </div>
 
     <div class="form-row">
-      <label for="node-input-inside"><i class="fa fa-sign-in"></i> Action</label>
-      <select id="node-input-inside" value="true" style="width: 70%;">
-        <option value="true">only points inside</option>
-        <option value="false">only points outside</option>
-        <option value="both">add "inarea" property</option>
-      </select>
+        <label for="node-input-inside"><i class="fa fa-sign-in"></i> Action</label>
+        <select id="node-input-inside" value="true" style="width: 70%;">
+            <option value="true">only points inside</option>
+            <option value="false">only points outside</option>
+            <option value="both">add "inarea" property</option>
+        </select>
     </div>
 
     <div class="form-row">
@@ -38,21 +46,21 @@
 </script>
 
 
-<script type="text/x-red" data-help-name="geofence">
+<script type="text/html" data-help-name="geofence">
    <p>A simple geofence filter node</p>
    <p>It supports circle and polygons, and will filter all messages that either
-      fall inside or outside the region described depending on the selected 
+      fall inside or outside the region described depending on the selected
       mode.</p>
    <p>This node requires input messages one of the following (checked in order):
     <ul>
+      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
       <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
       <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
-      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
    </p>
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
-   <p>In this mode if the node is has a name then <b>msg.location.isat</b> will be an array
+   <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
    containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
-   will contain an object of name, distance pairs. Where distance is the distance in metres to 
+   will contain an object of name, distance pairs. Where distance is the distance in metres to
    from the point to the centroid of the region.</p>
 </script>
 
@@ -66,7 +74,9 @@
             inside: {value: "true"},
             rad: {value: 0},
             points: {value: []},
-            centre: {value: {latitude:0.0, longitude: 0.0}}
+            centre: {value: {latitude:0.0, longitude: 0.0}},
+            floor: {value: ""},
+            ceiling: {value : ""}
         },
         inputs:1,
         outputs:1,
@@ -79,7 +89,7 @@
         },
         oneditprepare: function () {
           function setupMap(node) {
-            var map = L.map('node-geofence-map').setView([50.9025, -1.4042], 9);
+            var map = L.map('node-geofence-map').setView([51.0, -1.4], 6);
 
             window.node_geofence_map = map;
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -164,7 +174,8 @@
                 drawControl2.addTo(map);
               }
 
-            } else {
+            }
+            else {
               if (node.points.length >= 3) {
                 //console.log("found polygon ");
                 var corners = [];
@@ -172,9 +183,7 @@
                   var latlng = L.latLng(node.points[x].latitude, node.points[x].longitude);
                   corners.push(latlng);
                 }
-                var poly = L.polygon(
-                  corners
-                );
+                var poly = L.polygon(corners);
                 poly.addTo(drawnItems);
                 map.fitBounds(
                   poly.getBounds(),
@@ -238,7 +247,8 @@
                 n.centre = {latitude: layer._latlng.lat, longitude: layer._latlng.lng};
                 n.rad = layer._mRadius;
                 n.points = [];
-              } else {
+              }
+              else {
                 n.mode ="polyline";
                 n.points = [];
                 n.rad = 0;
