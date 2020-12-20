@@ -14,10 +14,17 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="geofence">
+<script type="text/html" data-template-name="geofence">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Geofence Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-floor"> _ Floor</label>
+        <input type="text" id="node-input-floor" style="width:25%;" placeholder="ground">
+        <span style="padding-left:30px; padding-right:8px"> &#8254; Ceiling</span>
+        <input type="text" id="node-input-ceiling" style="width:25%;" placeholder="infinity">
     </div>
 
     <div class="form-row">
@@ -70,17 +77,22 @@
 </script>
 
 
-<script type="text/x-red" data-help-name="geofence">
+<script type="text/html" data-help-name="geofence">
    <p>A simple geofence filter node</p>
    <p>It supports circle and polygons, and will filter all messages that either
       fall inside or outside the region described depending on the selected
       mode.</p>
-   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg.</p>
-   <p>If the node is given a name property then <b>msg.location.isat</b> will be an array
-   containing a list of named areas that the point is inside of and <b>msg.location.distance</b>
-   will contain an array of name, distance pairs. Where distance is the dinstance in metres to 
+   <p>This node requires input messages one of the following (checked in order):
+    <ul>
+      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
+      <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
+      <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
+   </p>
+   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
+   <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
+   containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
+   will contain an object of name, distance pairs. Where distance is the distance in metres to
    from the point to the centroid of the region.</p>
-   <p>This node requires inputs with <i>msg.location.lat</i> &amp; <i>msg.location.lon</i> values.</p>
 </script>
 
 <script type="text/javascript">
@@ -93,7 +105,9 @@
             inside: {value: "true"},
             rad: {value: ""},
             points: {value: []},
-            centre: {value: {}}
+            centre: {value: {}},
+            floor: {value: ""},
+            ceiling: {value : ""}
         },
         inputs:1,
         outputs:1,
