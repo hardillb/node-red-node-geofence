@@ -34,15 +34,15 @@ module.exports = function(RED) {
             var loc = undefined;
             send = send || function() { node.send.apply(node,arguments) }
 
-            if (msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")){
+            if (msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
                 if (msg.payload.action === "send") {
-                    console.log(node)
                     var m = {payload: {
                         name: node.name||"GeoFence",
                         layer: "geofence",
                         fillOpacity: 0.05,
                         fillColor: "#404040",
-                        clickable: true
+                        clickable: true,
+                        editable: true
                     }};
                     if (node.inside === "false") { m.payload.color = "#009100"; }
                     if (node.inside === "both") { m.payload.color = "#919100"; }
@@ -54,8 +54,18 @@ module.exports = function(RED) {
                         m.payload.lon = node.centre.longitude;
                         m.payload.radius = node.radius;
                     }
-                    send(m);
+                    send([null,m]);
                 }
+                // if (msg.payload.action === "draw" && msg.payload.name === node.name) {
+                //     if (node.mode === "circle") {
+                //         node.centre.latitude = msg.payload.lat;
+                //         node.centre.longitude = msg.payload.lon;
+                //         node.radius = msg.payload.radius;
+                //     }
+                //     if (node.mode === "polyline") {
+                //         node.points = msg.payload.area.map( function(p) { return {latitude:p.lat, longitude:p.lng}} );
+                //     }
+                // }
             }
 
             if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
@@ -149,11 +159,11 @@ module.exports = function(RED) {
                     if (done) { done(); }
                     return;
                 }
-            }
-            else {
-                //no location
+            } else {
+                //no location - so meh
                 if (done) {
-                    done("No location found in message")
+                    done();
+                    // done("No location found in message")
                 }
                 // else {
                 //     node.error("No location found in message", msg);
