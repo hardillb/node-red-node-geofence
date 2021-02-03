@@ -41,7 +41,7 @@
 <script type="text/x-red" data-help-name="geofence">
    <p>A simple geofence filter node</p>
    <p>It supports circle and polygons, and will filter all messages that either
-      fall inside or outside the region described depending on the selected 
+      fall inside or outside the region described depending on the selected
       mode.</p>
    <p>This node requires input messages one of the following (checked in order):
     <ul>
@@ -52,7 +52,7 @@
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
    <p>In this mode if the node is has a name then <b>msg.location.isat</b> will be an array
    containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
-   will contain an object of name, distance pairs. Where distance is the distance in metres to 
+   will contain an object of name, distance pairs. Where distance is the distance in metres to
    from the point to the centroid of the region.</p>
 </script>
 
@@ -69,7 +69,8 @@
             centre: {value: {latitude:0.0, longitude: 0.0}}
         },
         inputs:1,
-        outputs:1,
+        outputs:2,
+        outputLabels: ["filtered","fence"],
         icon: "white-globe.png",
         label: function() {
             return this.name||"geofence";
