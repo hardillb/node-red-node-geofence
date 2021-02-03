@@ -40,6 +40,11 @@
     </div>
 
     <div class="form-row">
+      <label style="width: 70%" for="node-input-worldmap">Enable output of zones to WorldMap node </label>
+      <input style="width: 20%" type="checkbox" id="node-input-worldmap">
+    </div>
+
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Geofence name">
     </div>
@@ -62,6 +67,10 @@
    containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
    will contain an object of name, distance pairs. Where distance is the distance in metres to
    from the point to the centroid of the region.</p>
+   <h2>WorldMap</h2>
+   <p>If the checkbox is enaled then a second output will be added to the node. From this output an
+   object describing the bounds of the geofence in a format that the WorldMap node understands.</p>
+   <p>This output is triggered by a `msg.payload.action` equal to `"send"`.</p>
 </script>
 
 <script type="text/javascript">
@@ -76,10 +85,13 @@
             points: {value: []},
             centre: {value: {latitude:0.0, longitude: 0.0}},
             floor: {value: ""},
-            ceiling: {value : ""}
+            ceiling: {value : ""},
+            worldmap: {value: false},
+            outputs: {value: 1}
         },
         inputs:1,
         outputs:1,
+        outputLabels: ["filtered","fence"],
         icon: "white-globe.png",
         label: function() {
             return this.name||"geofence";
@@ -260,6 +272,12 @@
             }
           });
           delete window.node_geofence_map;
+
+          if ($('#node-input-worldmap').is(":checked")) {
+            this.outputs = 2;
+          } else {
+            this.outputs = 1;
+          }
         },
         oneditresize: function(){
           if (window.node_geofence_map) {

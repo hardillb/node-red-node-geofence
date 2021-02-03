@@ -28,12 +28,50 @@ module.exports = function(RED) {
         this.inside = n.inside;
         this.floor = parseInt(n.floor || "");
         this.ceiling = parseInt(n.ceiling || "");
+        this.worldmap = n.worldmap;
         var node = this;
 
         node.on('input', function(msg, send, done) {
             var loc = undefined;
-
             send = send || function() { node.send.apply(node,arguments) }
+
+            if (n.worldmap && msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
+                if (msg.payload.action === "send") {
+                    var m = {payload: {
+                        name: node.name||"GeoFence",
+                        layer: "geofence",
+                        fillOpacity: 0.05,
+                        fillColor: "#404040",
+                        clickable: true
+                        //editable: true
+                    }};
+                    if (node.inside === "false") { m.payload.color = "#009100"; }
+                    if (node.inside === "both") { m.payload.color = "#919100"; }
+                    if (node.mode === "polyline") {
+                        m.payload.area = node.points.map( p => [p.latitude,p.longitude] );
+                    }
+                    if (node.mode === "circle") {
+                        m.payload.lat = node.centre.latitude;
+                        m.payload.lon = node.centre.longitude;
+                        m.payload.radius = node.radius;
+                    }
+                    send([null,m]);
+                    if (done) {
+                        done();
+                    }
+                    return;
+                }
+                // if (msg.payload.action === "draw" && msg.payload.name === node.name) {
+                //     if (node.mode === "circle") {
+                //         node.centre.latitude = msg.payload.lat;
+                //         node.centre.longitude = msg.payload.lon;
+                //         node.radius = msg.payload.radius;
+                //     }
+                //     if (node.mode === "polyline") {
+                //         node.points = msg.payload.area.map( function(p) { return {latitude:p.lat, longitude:p.lng}} );
+                //     }
+                // }
+            }
 
             if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
                 loc = {
@@ -126,12 +164,13 @@ module.exports = function(RED) {
                     if (done) { done(); }
                     return;
                 }
-            }
-            else {
-                //no location
+            } else {
+                //no location - so meh
                 if (done) {
+                    // done();
                     done("No location found in message")
-                } else {
+                }
+                else {
                     node.error("No location found in message", msg);
                 }
             }

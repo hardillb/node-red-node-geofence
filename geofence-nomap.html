@@ -107,7 +107,9 @@
             points: {value: []},
             centre: {value: {}},
             floor: {value: ""},
-            ceiling: {value : ""}
+            ceiling: {value : ""},
+            worldmap: {value: false},
+            outputs: {value: 1}
         },
         inputs:1,
         outputs:1,
@@ -153,6 +155,12 @@
             this.points.push({latitude: $("#node-input-NWLat").val(), longitude: $("#node-input-SELng").val()});
             this.points.push({latitude: $("#node-input-SELat").val(), longitude: $("#node-input-SELng").val()});
             this.points.push({latitude: $("#node-input-SELat").val(), longitude: $("#node-input-NWLng").val()});
+          }
+
+          if ($('#node-input-worldmap').is(":checked")) {
+            this.outputs = 2;
+          } else {
+            this.outputs = 1;
           }
         }
     });
