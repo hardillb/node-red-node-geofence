@@ -28,21 +28,22 @@ module.exports = function(RED) {
         this.inside = n.inside;
         this.floor = parseInt(n.floor || "");
         this.ceiling = parseInt(n.ceiling || "");
+        this.worldmap = n.worldmap;
         var node = this;
 
         node.on('input', function(msg, send, done) {
             var loc = undefined;
             send = send || function() { node.send.apply(node,arguments) }
 
-            if (msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
+            if (n.worldmap && msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
                 if (msg.payload.action === "send") {
                     var m = {payload: {
                         name: node.name||"GeoFence",
                         layer: "geofence",
                         fillOpacity: 0.05,
                         fillColor: "#404040",
-                        clickable: true,
-                        editable: true
+                        clickable: true
+                        //editable: true
                     }};
                     if (node.inside === "false") { m.payload.color = "#009100"; }
                     if (node.inside === "both") { m.payload.color = "#919100"; }
@@ -55,6 +56,10 @@ module.exports = function(RED) {
                         m.payload.radius = node.radius;
                     }
                     send([null,m]);
+                    if (done) {
+                        done();
+                    }
+                    return;
                 }
                 // if (msg.payload.action === "draw" && msg.payload.name === node.name) {
                 //     if (node.mode === "circle") {
@@ -162,12 +167,12 @@ module.exports = function(RED) {
             } else {
                 //no location - so meh
                 if (done) {
-                    done();
-                    // done("No location found in message")
+                    // done();
+                    done("No location found in message")
                 }
-                // else {
-                //     node.error("No location found in message", msg);
-                // }
+                else {
+                    node.error("No location found in message", msg);
+                }
             }
         });
     }
