@@ -31,8 +31,31 @@ module.exports = function(RED) {
 
         node.on('input', function(msg, send, done) {
             var loc = undefined;
-
             send = send || function() { node.send.apply(node,arguments) }
+
+            if (msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")){
+                if (msg.payload.action === "send") {
+                    console.log(node)
+                    var m = {payload: {
+                        name: node.name||"GeoFence",
+                        layer: "geofence",
+                        fillOpacity: 0.05,
+                        fillColor: "#404040",
+                        clickable: true
+                    }};
+                    if (node.inside === "false") { m.payload.color = "#009100"; }
+                    if (node.inside === "both") { m.payload.color = "#919100"; }
+                    if (node.mode === "polyline") {
+                        m.payload.area = node.points.map( p => [p.latitude,p.longitude] );
+                    }
+                    if (node.mode === "circle") {
+                        m.payload.lat = node.centre.latitude;
+                        m.payload.lon = node.centre.longitude;
+                        m.payload.radius = node.radius;
+                    }
+                    send(m);
+                }
+            }
 
             if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
                 loc = {
@@ -124,9 +147,10 @@ module.exports = function(RED) {
                 //no location
                 if (done) {
                     done("No location found in message")
-                } else {
-                    node.error("No location found in message", msg);
                 }
+                // else {
+                //     node.error("No location found in message", msg);
+                // }
             }
         });
     }
