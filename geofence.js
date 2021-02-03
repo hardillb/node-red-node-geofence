@@ -17,7 +17,6 @@
 module.exports = function(RED) {
     "use strict";
     var geolib = require('geolib');
-    var path= require('path');
 
     function geofenceNode(n) {
         RED.nodes.createNode(this,n);
@@ -27,6 +26,8 @@ module.exports = function(RED) {
         this.points = n.points;
         this.radius = n.rad;
         this.inside = n.inside;
+        this.floor = parseInt(n.floor || "");
+        this.ceiling = parseInt(n.ceiling || "");
         var node = this;
 
         node.on('input', function(msg, send, done) {
@@ -70,17 +71,20 @@ module.exports = function(RED) {
             if (msg.hasOwnProperty('location') && msg.location.hasOwnProperty('lat') && msg.location.hasOwnProperty('lon')) {
                 loc = {
                     latitude: msg.location.lat,
-                    longitude: msg.location.lon
+                    longitude: msg.location.lon,
+                    elevation: msg.location.alt || msg.location.altitude
                 };
             } else if (msg.hasOwnProperty('lon') && msg.hasOwnProperty('lat')) {
                 loc = {
                     latitude: msg.lat,
-                    longitude: msg.lon
+                    longitude: msg.lon,
+                    elevation: msg.alt || msg.altitude
                 };
             } else if (typeof(msg.payload) === 'object' && msg.payload.hasOwnProperty('lat') && msg.payload.hasOwnProperty('lon')) {
                 loc = {
                     latitude: msg.payload.lat,
-                    longitude: msg.payload.lon
+                    longitude: msg.payload.lon,
+                    elevation: msg.payload.alt || msg.payload.altitude
                 };
             }
 
@@ -88,9 +92,13 @@ module.exports = function(RED) {
                 var inout = false;
                 if (node.mode === 'circle') {
                     inout = geolib.isPointInCircle( loc, node.centre, Math.round(node.radius) );
-                } else {
+                }
+                else {
                     inout = geolib.isPointInside( loc, node.points );
                 }
+
+                if (loc.elevation && !isNaN(node.floor) && loc.elevation < node.floor) { inout = false; }
+                if (loc.elevation && !isNaN(node.ceiling) && loc.elevation > node.ceiling) { inout = false; }
 
                 if (inout && (node.inside === "true")) {
                     if (node.name) {
@@ -148,9 +156,7 @@ module.exports = function(RED) {
                         msg.location.distances[node.name] = distance;
                     }
                     send(msg);
-                    if (done) {
-                        done();
-                    }
+                    if (done) { done(); }
                     return;
                 }
             } else {
@@ -172,7 +178,6 @@ module.exports = function(RED) {
             root: __dirname + '/static/',
             dotfiles: 'deny'
         };
-
         res.sendFile(req.params[0], options);
 
         // var filename = path.join(__dirname , 'static', req.params[0]);

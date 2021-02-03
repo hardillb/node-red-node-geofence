@@ -1,9 +1,9 @@
 {
     "name": "node-red-node-geofence",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "description": "A simple node to filter based on location",
     "dependencies" :{
-        "geolib": "^2.0.0"
+        "geolib": "^2.0.24"
     },
     "repository" : {
         "type":"git",
