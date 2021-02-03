@@ -51,3 +51,12 @@ These are arround the "add 'inarea'" mode
  node that the message passes through
  - msg.location.distances is now just an object using the name as a key, rather than 
  an array of objects
+
+ ## WorldMap Support
+
+ If the check box is ticked then a second output port will be added to the node. The `msg`
+ output from this port will include the shape of the geofence zone that can be fed directly
+ into a WorldMap node so that it will be drawn on the geofence layer.
+
+ This output is triggered by a message with `msg.payload.action` set to `send`. This can be 
+ initiated by using the WorldMap in node when a new browser connects.
