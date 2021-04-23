@@ -1,16 +1,20 @@
 {
     "name": "node-red-node-geofence",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "A simple node to filter based on location",
-    "dependencies" :{
+    "dependencies": {
         "geolib": "^2.0.24"
     },
-    "repository" : {
-        "type":"git",
-        "url":"https://github.com/hardillb/node-red-node-geofence.git"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hardillb/node-red-node-geofence.git"
     },
     "license": "Apache-2.0",
-    "keywords": [ "node-red", "geofence", "location" ],
+    "keywords": [
+        "node-red",
+        "geofence",
+        "location"
+    ],
     "node-red": {
         "nodes": {
             "geofence": "geofence.js"

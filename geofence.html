@@ -58,9 +58,10 @@
       mode.</p>
    <p>This node requires input messages one of the following (checked in order):
     <ul>
-      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
-      <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
-      <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
+      <li><b>msg.payload.lat</b> &amp; <i>msg.payload.lon</i></li>
+      <li><b></b>msg.location.lat</b> &amp; <i>msg.location.lon</i></li>
+      <li><b>msg.lat</b> &amp; <i>msg.lon</i></li>
+    </ul>
    </p>
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
    <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
@@ -70,7 +71,7 @@
    <h2>WorldMap</h2>
    <p>If the checkbox is enaled then a second output will be added to the node. From this output an
    object describing the bounds of the geofence in a format that the WorldMap node understands.</p>
-   <p>This output is triggered by a `msg.payload.action` equal to `"send"`.</p>
+   <p>This output is triggered by a <code>msg.payload.action</code> equal to <code>"send"</code>.</p>
 </script>
 
 <script type="text/javascript">
@@ -104,10 +105,59 @@
             var map = L.map('node-geofence-map').setView([51.0, -1.4], 6);
 
             window.node_geofence_map = map;
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               maxZoom: 20,
               attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
             }).addTo(map);
+
+            //extend Leaflet to create a GeoJSON layer from a TopoJSON file
+            L.TopoJSON = L.GeoJSON.extend({
+                addData: function (data) {
+                var geojson, key;
+                if (data.type === "Topology") {
+                    for (key in data.objects) {
+                        if (data.objects.hasOwnProperty(key)) {
+                            geojson = topojson.feature(data, data.objects[key]);
+                            L.GeoJSON.prototype.addData.call(this, geojson);
+                        }
+                    }
+                    return this;
+                }
+                L.GeoJSON.prototype.addData.call(this, data);
+                return this;
+                }
+            });
+            L.topoJson = function (data, options) {
+                return new L.TopoJSON(data, options);
+            };
+            //create an empty geojson layer
+            //with a style and a popup on click
+            var geojson = L.topoJson(null, {
+                style: function(feature) {
+                    return {
+                        color: "#8080c0",
+                        opacity: 1,
+                        weight: 2,
+                        fill: "#888",
+                        fillOpacity: 0
+                    }
+                }
+            }).addTo(map);
+
+            async function getGeoData(url) {
+                let response = await fetch(url);
+                let data = await response.json();
+                return data;
+            }
+
+            var loadedCountries = false;
+            //fetch the geojson and add it to our geojson layer if osm tiles fail to load
+            osmLayer.on("tileerror", function (error, tile) {
+                if (!loadedCountries) {
+                    getGeoData('geofence/js/world-50m-flat.json').then(data => geojson.addData(data));
+                    loadedCountries = true;
+                }
+            });
 
             var drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
@@ -218,8 +268,15 @@
                 .done(function(data, textStatus, jqxhr){
                   $.getScript('geofence/js/L.GeoSearch/src/js/l.geosearch.provider.openstreetmap.js')
                   .done(function(data, textStatus, jqxhr) {
-                    setupMap(n);
-
+                    $.getScript('geofence/js/topojson.v1.min.js')
+                    .done(function(data, textStatus, jqxhr) {
+                      setupMap(n);
+                    })
+                    .fail(function(jqxhr, settings, exception ){
+                      console.log("failed5");
+                      console.log(exception);
+                      console.log(exception.stack);
+                    });
                   })
                   .fail(function(jqxhr, settings, exception ){
                     console.log("failed4");
