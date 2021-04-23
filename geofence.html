@@ -58,9 +58,10 @@
       mode.</p>
    <p>This node requires input messages one of the following (checked in order):
     <ul>
-      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
-      <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
-      <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
+      <li><b>msg.payload.lat</b> &amp; <i>msg.payload.lon</i></li>
+      <li><b></b>msg.location.lat</b> &amp; <i>msg.location.lon</i></li>
+      <li><b>msg.lat</b> &amp; <i>msg.lon</i></li>
+    </ul>
    </p>
    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
    <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
@@ -70,7 +71,7 @@
    <h2>WorldMap</h2>
    <p>If the checkbox is enaled then a second output will be added to the node. From this output an
    object describing the bounds of the geofence in a format that the WorldMap node understands.</p>
-   <p>This output is triggered by a `msg.payload.action` equal to `"send"`.</p>
+   <p>This output is triggered by a <code>msg.payload.action</code> equal to <code>"send"</code>.</p>
 </script>
 
 <script type="text/javascript">
