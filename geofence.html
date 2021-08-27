@@ -101,13 +101,23 @@
         },
         oneditprepare: function () {
           function setupMap(node) {
-            var map = L.map('node-geofence-map').setView([51.0, -1.4], 6);
 
+            var map = L.map('node-geofence-map').setView([51.0, -1.4], 6);
+            var basemaps = {};
             window.node_geofence_map = map;
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              maxZoom: 20,
-              attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+
+            var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
             }).addTo(map);
+            basemaps["OSM"] = osmLayer;
+            var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution:'Tiles &copy; Esri',
+                maxNativeZoom:17,
+                maxZoom:20
+            });
+            basemaps["Satellite"] = Esri_WorldImagery;
+            layercontrol = L.control.layers(basemaps,null).addTo(map);
 
             var drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
