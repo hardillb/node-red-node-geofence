@@ -334,6 +334,9 @@
                 n.rad = 0;
                 n.centre = {};
                 for (x in layer._latlngs) {
+                  if (layer._latlngs[x].lng < -180) {
+                    layer._latlngs[x].lng += 360
+                  }
                   n.points.push({latitude: layer._latlngs[x].lat, longitude: layer._latlngs[x].lng});
                 }
               }
