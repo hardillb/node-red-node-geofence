@@ -35,7 +35,7 @@ module.exports = function(RED) {
             var loc = undefined;
             send = send || function() { node.send.apply(node,arguments) }
 
-            if (n.worldmap && msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
+            if (node.worldmap && msg.hasOwnProperty("payload") && msg.payload.hasOwnProperty("action")) {
                 if (msg.payload.action === "send") {
                     var m = {payload: {
                         name: node.name||"GeoFence",
@@ -59,7 +59,7 @@ module.exports = function(RED) {
                     if (done) {
                         done();
                     }
-                    return;
+                    //return;
                 }
                 // if (msg.payload.action === "draw" && msg.payload.name === node.name) {
                 //     if (node.mode === "circle") {

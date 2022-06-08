@@ -52,25 +52,26 @@
 
 
 <script type="text/html" data-help-name="geofence">
-   <p>A simple geofence filter node</p>
-   <p>It supports circle and polygons, and will filter all messages that either
-      fall inside or outside the region described depending on the selected
-      mode.</p>
-   <p>This node requires input messages one of the following (checked in order):
+    <p>A simple geofence filter node</p>
+    <p>It supports circle and polygons, and will filter all messages that either
+    fall inside or outside the region described depending on the selected
+    mode.</p>
+    <p>This node requires input messages one of the following (checked in order):
     <ul>
-      <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</li>
-      <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
-      <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
-   </p>
-   <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
-   <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
-   containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
-   will contain an object of name, distance pairs. Where distance is the distance in metres to
-   from the point to the centroid of the region.</p>
-   <h2>WorldMap</h2>
-   <p>If the checkbox is enaled then a second output will be added to the node. From this output an
-   object describing the bounds of the geofence in a format that the WorldMap node understands.</p>
-   <p>This output is triggered by a `msg.payload.action` equal to `"send"`.</p>
+        <li><i>msg.payload.lat</i> &amp; <i>msg.payload.lon</i></li>
+        <li><i>msg.location.lat</i> &amp; <i>msg.location.lon</i></li>
+        <li><i>msg.lat</i> &amp; <i>msg.lon</i></li>
+    </ul>
+    </p>
+    <p>Alternatively it will add <b>msg.location.inarea</b> to the msg. with values of true/false</p>
+    <p>In this mode if the node has a name then <b>msg.location.isat</b> will be an array
+    containing a list of named regions that the point is inside of and <b>msg.location.distance</b>
+    will contain an object of name, distance pairs. Where distance is the distance in metres to
+    from the point to the centroid of the region.</p>
+    <h2>WorldMap</h2>
+    <p>If the checkbox is enaled then a second output will be added to the node. From this output an
+    object describing the bounds of the geofence in a format that the WorldMap node understands.</p>
+    <p>This output is triggered by a `msg.payload.action` equal to `"send"`.</p>
 </script>
 
 <script type="text/javascript">
