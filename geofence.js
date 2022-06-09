@@ -31,6 +31,12 @@ module.exports = function(RED) {
         this.worldmap = n.worldmap;
         var node = this;
 
+        node.points.forEach(point => {
+            if (point.longitude < -180) {
+                point.longitude += 360;
+            }
+        })
+
         node.on('input', function(msg, send, done) {
             var loc = undefined;
             send = send || function() { node.send.apply(node,arguments) }

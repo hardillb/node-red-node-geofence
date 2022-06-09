@@ -60,3 +60,6 @@ These are arround the "add 'inarea'" mode
 
  This output is triggered by a message with `msg.payload.action` set to `send`. This can be 
  initiated by using the WorldMap in node when a new browser connects.
+
+ Messages with `msg.payload.action` set to `send`will not be processed against the geofence,
+ these messages are only intended to come from the WorldMap in node.
